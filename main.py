@@ -3,6 +3,9 @@ import glob
 from fpdf import FPDF
 from pathlib import Path
 
+pdf_directory = "PDFs"
+Path(pdf_directory).mkdir(parents=True, exist_ok=True)
+
 # load_data into python
 filepaths = glob.glob("invoices/*.xlsx")
 
@@ -32,6 +35,7 @@ for filepath in filepaths:
     pdf.cell(w=30, h=8, txt=headerinfo[4].replace("_", " ").title(),
              border=1, ln=1)
 
+    total_price = 0
     # add data rows
     for index, row in df.iterrows():
         pdf.set_font(family="Times", size=10)
@@ -41,5 +45,15 @@ for filepath in filepaths:
         pdf.cell(w=30, h=8, txt=str(row["price_per_unit"]), border=1)
         pdf.cell(w=30, h=8, txt=str(row["total_price"]), border=1, ln=1)
 
-    pdf.output(f"PDFs/{filename}.pdf")
+    # calculate total_price
+    total_price = df["total_price"].sum()
+    # add total price row and text
+    pdf.set_font(family="Times", size=10, style="B")
+    pdf.cell(w=160, h=8, txt="")
+    pdf.cell(w=30, h=8, txt=str(total_price), border=1, ln=1)
+    pdf.set_font(family="Times", size=12, style="B")
+    pdf.cell(w=50, h=12, txt=f"The total due amount is: {total_price}",
+             align="L", ln=1)
 
+    # output the pdf
+    pdf.output(f"{pdf_directory}/{filename}.pdf")
